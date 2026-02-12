@@ -17,31 +17,37 @@ st.set_page_config(
 def load_data():
     """Google Sheets yoki Demo ma'lumot yuklash"""
 
-    # Google Sheets bilan ulanishni sinab ko'rish
     try:
         import gspread
-        from oauth2client.service_account import ServiceAccountCredentials
+        from google.oauth2.service_account import Credentials
 
-        scope = ['https://spreadsheets.google.com/feeds',
-                 'https://www.googleapis.com/auth/drive']
+        # Secrets dan JSON o‘qish
+        creds_dict = json.loads(st.secrets["GOOGLE_CREDS_JSON"])
 
-        creds= json.loads(st.secrets["GOOGLE_CREDS_JSON"])
-        client = gspread.authorize(creds)
+        # Credentials yaratish
+        credentials = Credentials.from_service_account_info(
+            creds_dict,
+            scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive"
+            ]
+        )
 
-        # Bu yerga o'zingizning Sheet URL ni qo'ying
+        # gspread client
+        client = gspread.authorize(credentials)
+
+        # Sheet ochish (NOMI bilan)
         sheet = client.open("Streamlid").sheet1
 
-        if sheet != client.open("Streamlid").sheet1:
-            sheet = client.open("Streamlid").sheet1
-            data = sheet.get_all_records()
-            df = pd.DataFrame(data)
-            st.sidebar.success("✅ Google Sheets dan yuklandi!")
-            return df
-        else:
-            raise Exception("Sheet URL kiritilmagan")
+        data = sheet.get_all_records()
+        df = pd.DataFrame(data)
+
+        st.sidebar.success("✅ Google Sheets dan yuklandi!")
+        return df
 
     except Exception as e:
-        st.sidebar.warning(f"⚠️ Google Sheets ishlamadi: {str(e)[:50]}...")
+        st.sidebar.warning("⚠️ Google Sheets ishlamadi")
+        st.sidebar.error(str(e))
         st.sidebar.info("📊 Demo ma'lumot bilan ishlayapman")
         return create_demo_data()
 
