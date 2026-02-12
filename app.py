@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import random
+import json
 
 st.set_page_config(
     page_title="Sales Dashboard",
@@ -24,7 +25,7 @@ def load_data():
         scope = ['https://spreadsheets.google.com/feeds',
                  'https://www.googleapis.com/auth/drive']
 
-        creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+        creds= json.loads(st.secrets["GOOGLE_CREDS_JSON"])
         client = gspread.authorize(creds)
 
         # Bu yerga o'zingizning Sheet URL ni qo'ying
